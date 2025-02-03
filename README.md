@@ -1,3 +1,27 @@
+<p style="background-color: #c0c3c4; color: #07385e; padding: 10px; font-family: Consolas, 'Courier New', monospace;">
+Nom       : Gnimassou   <br />
+Prénom    : Jean-Marie Aristide   <br />
+Email     : aristechdev@gmail.com   <br />
+
+
+<pre style="background-color: #e6e7e8; color: #bd0026; padding: 10px; font-family: Consolas, 'Courier New',color: #1e9bfa; font-weight: 900;">
+Signature DREAMER:
+
+ _______   _______   ________   ______   __       __  ________  _______  
+/       \ /       \ /        | /      \ /  \     /  |/        |/       \ 
+$$$$$$$  |$$$$$$$  |$$$$$$$$/ /$$$$$$  |$$  \   /$$ |$$$$$$$$/ $$$$$$$  |
+$$ |  $$ |$$ |__$$ |$$ |__    $$ |__$$ |$$$  \ /$$$ |$$ |__    $$ |__$$ |
+$$ |  $$ |$$    $$< $$    |   $$    $$ |$$$$  /$$$$ |$$    |   $$    $$< 
+$$ |  $$ |$$$$$$$  |$$$$$/    $$$$$$$$ |$$ $$ $$/$$ |$$$$$/    $$$$$$$  |
+$$ |__$$ |$$ |  $$ |$$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |_____ $$ |  $$ |
+$$    $$/ $$ |  $$ |$$       |$$ |  $$ |$$ | $/  $$ |$$       |$$ |  $$ |
+$$$$$$$/  $$/   $$/ $$$$$$$$/ $$/   $$/ $$/      $$/ $$$$$$$$/ $$/   $$/ 
+</pre>
+</p>
+
+
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
