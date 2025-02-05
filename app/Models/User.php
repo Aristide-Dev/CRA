@@ -43,6 +43,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => 'string',
         ];
     }
+    
+    // Un utilisateur a plusieurs CRAs
+    public function cras() {
+        return $this->hasMany(Cra::class);
+    }
+
 }

@@ -28,4 +28,9 @@ class Project extends Model
             'status' => 'boolean',
         ];
     }
+    
+    // Un projet a plusieurs activités
+    public function activities() {
+        return $this->hasMany(Activity::class);
+    }
 }

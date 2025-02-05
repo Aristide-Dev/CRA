@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('project_id')->constrained()->onDelete('cascade');
-            $table->string('type');
-            $table->text('description')->nullable();
+            $table->foreignId('cra_id')->constrained();
+            $table->foreignId('project_id')->constrained();
             $table->date('date');
-            $table->integer('hours');
+            $table->string('type'); // , ['development', 'research', 'training', 'meeting']
+            $table->integer('duration'); // Heures (ex: 4)
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }
