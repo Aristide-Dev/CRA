@@ -27,6 +27,7 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
         ]);
 
         Project::create($validated);
@@ -51,6 +52,7 @@ class ProjectController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
         ]);
 
         $project->update($validated);
@@ -61,6 +63,10 @@ class ProjectController extends Controller
     // Suppression d'un projet
     public function destroy(Project $project)
     {
+        if ($project->activities()->exists()) {
+            return redirect()->route('projects.index')->with('error', 'Impossible de supprimer ce projet car il contient des activités.');
+        }
+        
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Projet supprimé avec succès.');

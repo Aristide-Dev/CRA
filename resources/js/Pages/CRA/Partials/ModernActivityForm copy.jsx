@@ -130,7 +130,7 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Calendar className="mr-2 w-5 h-5 text-indigo-600" /> Date
             </label>
             <input 

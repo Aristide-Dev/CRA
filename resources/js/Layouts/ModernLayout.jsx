@@ -1,17 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
+import { ToastContainer, toast } from "react-toastify";
+// import "react-toastify/dist/ReactToastify.min.css";
 import { 
   LayoutDashboard, 
   FileSpreadsheet, 
   Folders, 
   UserCircle, 
   Menu, 
-  X 
+  X,
+  Users
 } from 'lucide-react';
 
 export default function ModernLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { auth, flash } = usePage().props;
+
+  const authUser = auth.user;
+
+  useEffect(() => {
+      if (flash?.success) {
+          toast.success(flash.success, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+          });
+      }
+
+      if (flash?.error) {
+          toast.error(flash.error, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+          });
+      }
+  }, [flash]);
 
   const isActiveRoute = (routeName) => route().current(routeName);
 
@@ -22,28 +52,54 @@ export default function ModernLayout({ children }) {
       active: 'dashboard',
       icon: LayoutDashboard
     },
-    { 
-      href: route('cra.index'), 
-      label: 'CRAs', 
-      active: 'cra.*',
-      icon: FileSpreadsheet
-    },
-    { 
-      href: route('projects.index'), 
-      label: 'Projets', 
-      active: 'projects.*',
-      icon: Folders
-    },
+  ];
+
+  if(authUser.role === 'worker'){
+    navigationItems.push(
+      { 
+        href: route('cra.index'), 
+        label: 'CRAs', 
+        active: 'cra.*',
+        icon: FileSpreadsheet
+      },
+    );
+  }
+
+  if(authUser.role === 'manager'){
+    navigationItems.push(
+      { 
+        href: route('manager.cra.index'), 
+        label: 'CRAs', 
+        active: 'manager.cra.*',
+        icon: FileSpreadsheet
+      },
+      { 
+        href: route('manager.projects.index'), 
+        label: 'Projets', 
+        active: 'manager.projects.*',
+        icon: Folders
+      },
+      { 
+        href: route('manager.users.index'), 
+        label: 'Utilisateurs', 
+        active: 'manager.users.*',
+        icon: Users
+      }
+    );
+  }
+
+  
+  navigationItems.push(
     { 
       href: route('profile.edit'), 
       label: 'Profil', 
       active: 'profile.*',
       icon: UserCircle
     }
-  ];
+  );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-gray-950">
       {/* Fixed Sidebar Navigation */}
       <nav className="hidden md:block fixed top-0 left-0 h-full w-64 bg-gray-900 border-r border-gray-800 p-4 space-y-2 overflow-y-auto">
         {/* Logo */}
@@ -144,6 +200,7 @@ export default function ModernLayout({ children }) {
           {children}
         </div>
       </main>
+      <ToastContainer />
     </div>
   );
 }

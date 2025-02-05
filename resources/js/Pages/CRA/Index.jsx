@@ -1,83 +1,84 @@
+// CRAIndex.jsx
+import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import ModernLayout from '@/Layouts/ModernLayout';
-// import { Inertia } from '@inertiajs/inertia';
 
 export default function CRAIndex({ cras }) {
-    const deleteCRA = (id) => {
-        if (confirm('Supprimer ce CRA ?')) {
-            delete(route('cra.destroy', id));
-        }
-    };
+  // Fonction de suppression d'un CRA
+  const deleteCRA = (id) => {
+    if (confirm('Supprimer ce CRA ?')) {
+      // La fonction delete() est attendue d'Inertia (ou Inertia.delete)
+      // Vous pouvez aussi utiliser router.delete si vous préférez
+      router.delete(route('cra.destroy', id));
+    }
+  };
 
-    return (
-        <ModernLayout>
-            <Head title="Mes CRAs" />
-            
-            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Mes Comptes Rendus d'Activité</h1>
-                    <Link 
-                        href={route('cra.create')}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                        Nouveau CRA
-                    </Link>
-                </div>
+  return (
+    <ModernLayout>
+      <Head title="Mes CRAs" />
+      
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* En-tête */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
+            Mes Comptes Rendus d'Activité
+          </h1>
+          <Link 
+            href={route('cra.create')}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:bg-indigo-700 transition-colors"
+          >
+            Nouveau CRA
+          </Link>
+        </div>
 
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mois/Année</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Heures Total</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {cras.map((cra) => (
-                                <tr key={cra.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {new Date(cra.month_year).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 rounded-full text-xs ${
-                                            cra.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                            cra.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                            'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                            {cra.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {cra.activities.reduce((sum, a) => sum + parseFloat(a.duration), 0)}h
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                                        <Link 
-                                            href={route('cra.show', cra.id)}
-                                            className="text-blue-500 hover:text-blue-600"
-                                        >
-                                            Voir+
-                                        </Link>
-                                        <Link 
-                                            href={route('cra.edit', cra.id)}
-                                            className="text-yellow-500 hover:text-yellow-600"
-                                        >
-                                            Éditer
-                                        </Link>
-                                        <button 
-                                            onClick={() => deleteCRA(cra.id)}
-                                            className="text-red-500 hover:text-red-600"
-                                        >
-                                            Supprimer
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+        {/* Grid de cartes */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {cras.map((cra) => (
+            <div key={cra.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {new Date(cra.month_year).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                </h2>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium 
+                  ${cra.status === 'approved' 
+                    ? 'bg-green-100 text-green-800' 
+                    : cra.status === 'rejected' 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
+                  {cra.status}
+                </span>
+              </div>
+              <p className="text-gray-600 mb-4">
+                <span className="font-medium">Heures Total :</span> {cra.activities.reduce((sum, a) => sum + parseFloat(a.duration), 0)}h
+              </p>
+              <div className="flex justify-between items-center">
+                <Link 
+                  href={route('cra.show', cra.id)}
+                  className="text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  Voir +
+                </Link>
+                <div className="flex space-x-4">
+                  <Link 
+                    href={route('cra.edit', cra.id)}
+                    className="text-yellow-500 hover:text-yellow-600 font-medium"
+                  >
+                    Éditer
+                  </Link>
+                  <button 
+                    onClick={() => deleteCRA(cra.id)}
+                    className="text-red-500 hover:text-red-600 font-medium"
+                  >
+                    Supprimer
+                  </button>
                 </div>
+              </div>
             </div>
-        </ModernLayout>
-    );
+          ))}
+        </div>
+      </div>
+    </ModernLayout>
+  );
 }
