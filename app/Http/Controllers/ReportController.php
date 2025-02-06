@@ -156,6 +156,7 @@ class ReportController extends Controller
     {
         Gate::policy('viewManagerDashboard', auth()->user());
 
+
         $reports = auth()->user()->managedReports()
             ->with(['user'])
             ->orderBy('created_at', 'desc')
