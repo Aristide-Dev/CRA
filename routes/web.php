@@ -28,6 +28,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -90,5 +91,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::resource('reports', ReportController::class);
+    Route::put('reports/{report}/status', [ReportController::class, 'updateStatus'])->name('reports.status');
+    Route::post('reports/{report}/feedback', [ReportController::class, 'managerFeedback'])->name('reports.feedback');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports/manager/dashboard', [ReportController::class, 'managerDashboard'])
+        ->name('reports.manager.dashboard');
+});
 
 require __DIR__.'/auth.php';

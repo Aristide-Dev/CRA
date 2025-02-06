@@ -62,8 +62,15 @@ export default function ModernLayout({ children }) {
         active: 'cra.*',
         icon: FileSpreadsheet
       },
+      { 
+        href: route('reports.index'), 
+        label: 'Rapports', 
+        active: 'reports.*',
+        icon: FileSpreadsheet
+      },
     );
   }
+
 
   if(authUser.role === 'manager'){
     navigationItems.push(
@@ -80,11 +87,19 @@ export default function ModernLayout({ children }) {
         icon: Folders
       },
       { 
+        href: route('reports.manager.dashboard'), 
+        label: 'Rapports', 
+        active: 'reports.manager.dashboard',
+        icon: FileSpreadsheet
+
+      },
+      { 
         href: route('manager.users.index'), 
         label: 'Utilisateurs', 
         active: 'manager.users.*',
         icon: Users
       }
+
     );
   }
 

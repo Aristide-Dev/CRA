@@ -53,4 +53,16 @@ class User extends Authenticatable
         return $this->hasMany(Cra::class);
     }
 
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
+
+    public function managedReports()
+    {
+        return $this->belongsToMany(Report::class, 'report_manager')
+            ->withPivot('status', 'feedback')
+            ->withTimestamps();
+    }
+
 }
