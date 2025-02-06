@@ -38,13 +38,13 @@ Route::get('/', function () {
     ]);
 });
 
-// Exemple : Accès réservé aux managers
-Route::get('/manager/dashboard', [ManagerController::class, 'index'])
-    ->middleware(['auth', 'role:manager']); // <-- Middleware personnalisé
+// // Exemple : Accès réservé aux managers
+// Route::get('/manager/dashboard', [AdminController::class, 'index'])
+//     ->middleware(['auth', 'role:manager']); // <-- Middleware personnalisé
 
-// Exemple : Accès réservé aux admins
-Route::get('/admin/stats', [AdminController::class, 'stats'])
-    ->middleware(['auth', 'role:admin']);
+// // Exemple : Accès réservé aux admins
+// Route::get('/admin/stats', [AdminController::class, 'stats'])
+//     ->middleware(['auth', 'role:admin']);
 
 // Route::get('/dashboard', function () {
 //     return Inertia::render('Dashboard');
@@ -71,6 +71,8 @@ Route::middleware(['auth', CheckRole::class.':manager'])->prefix('manager')->nam
     Route::post('/cra', [CRAController::class, 'store'])->name('cra.store');
     Route::get('/cra/{cra}', [CRAController::class, 'show'])->name('cra.show');
     Route::get('/cra/{cra}/edit', [CRAController::class, 'edit'])->name('cra.edit');
+    Route::get('/cras/{year}/{month}', [CRAController::class, 'monthDetail'])->name('cra.month.detail');
+    Route::get('/cra/{cra}/details', [CRAController::class, 'showDetails'])->name('cra.details');
     Route::put('/cra/{cra}', [CRAController::class, 'update'])->name('cra.update');
     
     Route::post('/cra/{cra}/activities', [ActivityController::class, 'store'])->name('activities.store');
@@ -87,5 +89,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
 
 require __DIR__.'/auth.php';

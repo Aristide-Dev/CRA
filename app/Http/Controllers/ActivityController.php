@@ -29,7 +29,7 @@ class ActivityController extends Controller
     
         $cra->activities()->create($validated);
     
-        return redirect()->route('cra.show', $cra)->with('success', 'Activités ajoutées !');
+        return redirect()->back()->with('success', 'Activités ajoutées !');
     }
     
 
@@ -48,7 +48,7 @@ class ActivityController extends Controller
         $activity = Activity::findOrFail($activity_id);
         $activity->update($validated);
         $cra = $activity->cra;
-        return redirect()->route('cra.show', $cra)->with('success', 'Activités  mise à jour avec succès !');
+        return redirect()->back()->with('success', 'Activités  mise à jour avec succès !');
     }
     
     
@@ -62,6 +62,6 @@ class ActivityController extends Controller
         $activity->delete();
         $cra = $activity->cra;
 
-        return redirect()->route('cra.show', $cra)->with('success', 'Activité supprimée.');
+        return redirect()->back()->with('success', 'Activité supprimée.');
     }
 }

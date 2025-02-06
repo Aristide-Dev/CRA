@@ -19,7 +19,7 @@ export default function Create() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    router.post(route("users.store"), form);
+    router.post(route("manager.users.store"), form);
   };
 
   const roleOptions = [
@@ -52,7 +52,6 @@ export default function Create() {
                     id="name"
                     name="name"
                     type="text"
-                    required
                     value={form.name}
                     onChange={handleChange}
                     className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -71,7 +70,6 @@ export default function Create() {
                     id="email"
                     name="email"
                     type="email"
-                    required
                     value={form.email}
                     onChange={handleChange}
                     className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -90,7 +88,6 @@ export default function Create() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    required
                     value={form.password}
                     onChange={handleChange}
                     className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -117,7 +114,6 @@ export default function Create() {
                     name="role"
                     value={form.role}
                     onChange={handleChange}
-                    required
                     className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   >
                     <option value="">Sélectionner un rôle</option>

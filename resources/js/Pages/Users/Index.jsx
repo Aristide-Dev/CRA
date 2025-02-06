@@ -17,7 +17,7 @@ export default function UsersIndex({ users }) {
 
     const handleDelete = (userId) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-            deleteForm.delete(route('users.destroy', userId), {
+            deleteForm.delete(route('manager.users.destroy', userId), {
                 preserveScroll: true,
             });
         }
@@ -33,7 +33,7 @@ export default function UsersIndex({ users }) {
                     <div className="flex justify-between items-center mb-8">
                         <h1 className="text-4xl font-extrabold text-indigo-800">Gestion des Utilisateurs</h1>
                         <Link
-                            href={route('users.create')}
+                            href={route('manager.users.create')}
                             className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
                         >
                             <UserPlus className="w-5 h-5" />
@@ -95,7 +95,7 @@ export default function UsersIndex({ users }) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right flex justify-end space-x-2">
                                             <Link
-                                                href={route('users.edit', user.id)}
+                                                href={route('manager.users.edit', user.id)}
                                                 className="text-yellow-600 hover:text-yellow-900 transition duration-300 flex items-center"
                                             >
                                                 <Edit2 className="w-5 h-5" />

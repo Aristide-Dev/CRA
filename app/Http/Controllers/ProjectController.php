@@ -32,7 +32,7 @@ class ProjectController extends Controller
 
         Project::create($validated);
 
-        return redirect()->route('projects.index')->with('success', 'Projet créé avec succès.');
+        return redirect()->route('manager.projects.index')->with('success', 'Projet créé avec succès.');
     }
 
     // Affichage d'un projet spécifique
@@ -57,18 +57,18 @@ class ProjectController extends Controller
 
         $project->update($validated);
 
-        return redirect()->route('projects.index')->with('success', 'Projet mis à jour avec succès.');
+        return redirect()->route('manager.projects.index')->with('success', 'Projet mis à jour avec succès.');
     }
 
     // Suppression d'un projet
     public function destroy(Project $project)
     {
         if ($project->activities()->exists()) {
-            return redirect()->route('projects.index')->with('error', 'Impossible de supprimer ce projet car il contient des activités.');
+            return redirect()->route('manager.projects.index')->with('error', 'Impossible de supprimer ce projet car il contient des activités.');
         }
         
         $project->delete();
 
-        return redirect()->route('projects.index')->with('success', 'Projet supprimé avec succès.');
+        return redirect()->route('manager.projects.index')->with('success', 'Projet supprimé avec succès.');
     }
 }

@@ -21,7 +21,7 @@ export default function Edit() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    router.put(route("users.update", user.id), form);
+    router.put(route("manager.users.update", user.id), form);
   };
 
   const roleOptions = [

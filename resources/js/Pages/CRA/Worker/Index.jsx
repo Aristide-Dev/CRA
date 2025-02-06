@@ -1,4 +1,4 @@
-// CRAIndex.jsx
+// CRA/WorkerIndex.jsx
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import ModernLayout from '@/Layouts/ModernLayout';
@@ -34,7 +34,7 @@ export default function CRAIndex({ cras }) {
         {/* Grid de cartes */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cras.map((cra) => (
-            <div key={cra.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow">
+            <a href={route('cra.show', cra.id)} key={cra.id} className="bg-white rounded-xl border shadow-xl p-6 hover:shadow-2xl transition-shadow hover:ring-1 hover:ring-indigo-500">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">
                   {new Date(cra.month_year).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
@@ -75,7 +75,7 @@ export default function CRAIndex({ cras }) {
                   </button>
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

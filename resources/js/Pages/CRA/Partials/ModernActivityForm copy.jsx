@@ -148,7 +148,7 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
 
           {/* Project */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Layers className="mr-2 w-5 h-5 text-indigo-600" /> Projet
             </label>
             <select
@@ -170,7 +170,7 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
 
           {/* Activity Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <FileText className="mr-2 w-5 h-5 text-indigo-600" /> Type d'activité
             </label>
             <select
@@ -191,7 +191,7 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
 
           {/* Duration */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Clock className="mr-2 w-5 h-5 text-indigo-600" /> Durée (heures)
             </label>
             <input
@@ -211,7 +211,7 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
 
         {/* Remarks */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+          <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
             Remarques
           </label>
           <textarea
