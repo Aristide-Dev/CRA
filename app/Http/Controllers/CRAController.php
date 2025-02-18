@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class CRAController extends Controller
 {
@@ -47,6 +49,7 @@ class CRAController extends Controller
     // Afficher le formulaire de création
     public function create()
     {
+        Gate::policy('create', $this->user);
         return Inertia::render('CRA/Create', [
             'projects' => Project::all() // Pour la liste déroulante des projets
         ]);
@@ -55,16 +58,32 @@ class CRAController extends Controller
     // Enregistrer un nouveau CRA
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'month_year' => 'required|date_format:Y-m|unique:cras,month_year,NULL,id,user_id,' . auth()->id(),
+
+        $request->validate([
+            'month_year' => [
+                'required',
+                'date_format:Y-m',
+            ],
+        ], [
+            'month_year.required'    => 'Le mois et l\'année sont requis',
+            'month_year.date_format' => 'Le format de la date doit être AAAA-MM',
         ]);
 
-        // Créer le CRA avec le statut "draft" par défaut
-        $cra = auth()->user()->cras()->create([
-            'month_year' => $validated['month_year'] . '-01' // Format Y-m-01
+        if(Cra::where('user_id', $this->user->id)
+                   ->where('month_year', $request->month_year . '-01')->exists())
+        {
+            return back()->withErrors([
+                'month_year' => 'Un CRA existe déjà pour ce mois'
+            ]);
+        }
+
+        $cra = Cra::create([
+            'month_year' => $request->month_year . '-01', // Ajout du jour pour le format de date
+            'user_id' => $this->user->id,
         ]);
 
-        return redirect()->back()->with('success', 'CRA créé avec succès');
+        return redirect()->back()
+            ->with('success', 'CRA créé avec succès');
     }
 
     // Afficher le formulaire d'édition
@@ -94,21 +113,26 @@ class CRAController extends Controller
     // Mettre à jour un CRA
     public function update(Request $request, Cra $cra)
     {
-        Gate::policy('update', $cra);
-
-        $validated = $request->validate([
-            'status' => 'required|in:draft,submitted',
-            'activities' => 'array' // Validation des activités (à compléter)
+        $request->validate([
+            'month_year' => [
+                'required',
+                'date_format:Y-m',
+                Rule::unique('cras')->where(function ($query) {
+                    return $query->where('user_id', $this->user->id);
+                })->ignore($cra->id),
+            ],
+        ], [
+            'month_year.required' => 'Le mois et l\'année sont requis',
+            'month_year.date_format' => 'Le format de la date doit être AAAA-MM',
+            'month_year.unique' => 'Un CRA existe déjà pour ce mois',
         ]);
 
-        $cra->update($validated);
+        $cra->update([
+            'month_year' => $request->month_year . '-01',
+        ]);
 
-        // Si soumission, notifier le manager
-        if ($validated['status'] === 'submitted') {
-            // ... Logique de notification ici ...
-        }
-
-        return redirect()->back()->with('success', 'CRA mis à jour avec succès');
+        return redirect()->back()
+            ->with('success', 'CRA mis à jour avec succès');
     }
 
     public function monthDetail($year, $month)
@@ -132,76 +156,116 @@ class CRAController extends Controller
             'activities.project',
         ]);
 
-        // Grouper les activités par projet
-        $activitiesByProject = $cra->activities->groupBy('project.id')->map(function ($activities) {
-            $project = $activities->first()->project;
-            return [
-                'project' => $project,
-                'total_hours' => $activities->sum('duration'),
-                'activities_count' => $activities->count(),
-                'activities' => $activities,
-                'average_duration' => $activities->avg('duration'),
-                'types' => $activities->groupBy('type')->map->count(), // Répartition par type
-            ];
-        });
+        // Calcul total des heures avec vérification
+        $totalHours = $cra->activities->sum('duration');
+        $totalActivities = $cra->activities->count();
 
-        // Grouper par type d'activité
-        $activitiesByType = $cra->activities->groupBy('type')->map(function ($activities) {
-            return [
-                'total_hours' => $activities->sum('duration'),
-                'count' => $activities->count(),
-                'average_duration' => $activities->avg('duration'),
-            ];
-        });
-
-        // Statistiques par jour
-        $dailyStats = $cra->activities
-            ->groupBy('date')
+        // Statistiques regroupées par projet
+        $activitiesByProject = $cra->activities
+            ->groupBy('project.id')
             ->map(function ($activities) {
+                $project = $activities->first()->project;
                 return [
+                    'project' => $project,
                     'total_hours' => $activities->sum('duration'),
                     'activities_count' => $activities->count(),
-                    'projects_count' => $activities->unique('project_id')->count(),
-                    'types' => $activities->groupBy('type')->map->count(),
+                    'activities' => $activities,
+                    'average_duration' => $activities->count() ? round($activities->avg('duration'), 2) : 0,
+                    'types' => $activities->groupBy('type')->map(function ($group) {
+                        return $group->count();
+                    })
                 ];
             });
 
-        return Inertia::render('CRA/Manager/CraDetails', [
+        // Statistiques regroupées par type d'activité
+        $activitiesByType = $cra->activities->groupBy('type')->map(function ($activities) use ($totalHours, $totalActivities, $cra) {
+            $sumHours = $activities->sum('duration');
+            return [
+                'total_hours' => $sumHours,
+                'count' => $activities->count(),
+                'average_duration' => $activities->count() ? round($activities->avg('duration'), 2) : 0,
+                'percentage_hours' => $totalHours > 0 ? round(($sumHours / $totalHours) * 100, 2) : 0,
+                'percentage_activities' => $totalActivities > 0 ? round(($activities->count() / $totalActivities) * 100, 2) : 0,
+            ];
+        });
+
+        // Statistiques par date
+        $dailyStats = $cra->activities->groupBy('date')->map(function ($activities) {
+            return [
+                'total_hours' => $activities->sum('duration'),
+                'activities_count' => $activities->count(),
+                'projects_count' => $activities->unique('project_id')->count(),
+                'types' => $activities->groupBy('type')->map->count(),
+                'average_duration' => $activities->count() ? round($activities->avg('duration'), 2) : 0,
+            ];
+        });
+
+        // Calcul correct des jours ouvrés du mois
+        // On suppose que $cra->month_year est au format "Y-m" (ex: "2023-10")
+        try {
+            $date = \Carbon\Carbon::createFromFormat('Y-m', $cra->month_year);
+        } catch (\Exception $e) {
+            $date = \Carbon\Carbon::now();
+        }
+        $startOfMonth = $date->copy()->startOfMonth();
+        $endOfMonth = $date->copy()->endOfMonth();
+        $workingDays = 0;
+        for ($day = $startOfMonth->copy(); $day->lte($endOfMonth); $day->addDay()) {
+            if (!in_array($day->dayOfWeek, [\Carbon\Carbon::SATURDAY, \Carbon\Carbon::SUNDAY])) {
+                $workingDays++;
+            }
+        }
+
+        return \Inertia\Inertia::render('CRA/Manager/CraDetails', [
             'cra' => $cra,
             'stats' => [
-                // Stats globales
-                'total_hours' => $cra->activities->sum('duration'),
-                'total_activities' => $cra->activities->count(),
+                // Statistiques globales
+                'total_hours' => $totalHours,
+                'total_activities' => $totalActivities,
                 'total_projects' => $activitiesByProject->count(),
-                'average_hours_per_day' => $cra->activities->sum('duration') / 20,
-                'average_duration_per_activity' => $cra->activities->avg('duration'),
+                'average_hours_per_day' => $workingDays > 0 ? round($totalHours / $workingDays, 2) : 0,
+                'average_duration_per_activity' => $totalActivities ? round($cra->activities->avg('duration'), 2) : 0,
                 
-                // Stats par projet
+                // Statistiques par projet
                 'activities_by_project' => $activitiesByProject,
                 
-                // Stats par type d'activité
+                // Statistiques par type d'activité
                 'activities_by_type' => $activitiesByType,
                 
-                // Stats quotidiennes
+                // Statistiques quotidiennes
                 'daily_stats' => $dailyStats,
                 
-                // Stats des projets
+                // Statistiques des projets
                 'projects_stats' => [
                     'most_time_consuming' => $activitiesByProject->sortByDesc('total_hours')->first(),
                     'most_activities' => $activitiesByProject->sortByDesc('activities_count')->first(),
-                    'average_hours_per_project' => $cra->activities->sum('duration') / $activitiesByProject->count(),
+                    'average_hours_per_project' => $activitiesByProject->count() ? round($totalHours / $activitiesByProject->count(), 2) : 0,
                 ],
                 
-                // Distribution du temps
+                // Distribution du temps en pourcentage
                 'time_distribution' => [
-                    'by_project' => $activitiesByProject->mapWithKeys(function ($data, $key) use ($cra) {
-                        return [$key => ($data['total_hours'] / $cra->activities->sum('duration')) * 100];
+                    'by_project' => $activitiesByProject->mapWithKeys(function ($data, $key) use ($totalHours) {
+                        return [$key => $totalHours > 0 ? round(($data['total_hours'] / $totalHours) * 100, 2) : 0];
                     }),
-                    'by_type' => $activitiesByType->mapWithKeys(function ($data, $key) use ($cra) {
-                        return [$key => ($data['total_hours'] / $cra->activities->sum('duration')) * 100];
+                    'by_type' => $activitiesByType->mapWithKeys(function ($data, $key) use ($totalHours) {
+                        return [$key => $totalHours > 0 ? round(($data['total_hours'] / $totalHours) * 100, 2) : 0];
                     }),
                 ],
+                
+                // Autres statistiques
+                'average_activities_per_day' => $workingDays > 0 ? round($totalActivities / $workingDays, 2) : 0,
+                'average_projects_per_day' => $workingDays > 0 ? round($activitiesByProject->count() / $workingDays, 2) : 0,
+                'working_days' => $workingDays,
             ]
+        ]);
+    }
+
+    public function personalIndex()
+    {
+        return Inertia::render('CRA/Manager/Personal', [
+            'my_cras' => Cra::with(['activities.project'])
+                ->where('user_id', $this->user->id)
+                ->get()
         ]);
     }
 }

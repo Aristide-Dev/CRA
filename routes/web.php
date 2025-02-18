@@ -68,6 +68,7 @@ Route::middleware(['auth', CheckRole::class.':worker'])->group(function () {
 // Routes pour les activités (Nested)
 Route::middleware(['auth', CheckRole::class.':manager'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/cra', [CRAController::class, 'index'])->name('cra.index');
+    Route::get('/cra/personal', [CRAController::class, 'personalIndex'])->name('cra.personal.index');
     Route::get('/cra/create', [CRAController::class, 'create'])->name('cra.create');
     Route::post('/cra', [CRAController::class, 'store'])->name('cra.store');
     Route::get('/cra/{cra}', [CRAController::class, 'show'])->name('cra.show');

@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import { Calendar, Layers, Clock, FileText, Trash2, Check, X } from "lucide-react";
 
+// Enregistrer la locale française
+registerLocale('fr', fr);
+
 export default function ModernActivityForm({ activity, projects, monthYear, craId }) {
+  const minDate = startOfMonth(parseISO(monthYear));
+  const maxDate = endOfMonth(parseISO(monthYear));
+
+  // S'assurer que la date initiale est un objet Date valide
+  const getInitialDate = () => {
+    if (activity.date) {
+      const date = new Date(activity.date);
+      return date < minDate || date > maxDate ? minDate : date;
+    }
+    return minDate; // Par défaut, premier jour du mois
+  };
+
   const [form, setForm] = useState(() => ({
-    date: activity.date 
-      ? (activity.date instanceof Date ? activity.date : parseISO(activity.date))
-      : null,
+    date: getInitialDate(),
     project_id: activity.project_id,
     type: activity.type,
     duration: activity.duration,
@@ -17,18 +33,27 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
 
   const [errors, setErrors] = useState({});
 
-  const minDate = startOfMonth(parseISO(monthYear));
-  const maxDate = endOfMonth(parseISO(monthYear));
-
   const handleFieldChange = (field, value) => {
-    // setForm(prev => ({ ...prev, [field]: value }));
-  setForm(prev => ({
-    ...prev, 
-    [field]: field === 'date' ? format(new Date(value), 'yyyy-MM-dd') : value
-  }));
-    // Clear specific field error when user starts editing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+    if (field === 'date') {
+      if (value && value >= minDate && value <= maxDate) {
+        setForm(prev => ({
+          ...prev,
+          date: value
+        }));
+        if (errors.date) {
+          setErrors(prev => ({ ...prev, date: undefined }));
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          date: "La date doit être dans le mois du CRA"
+        }));
+      }
+    } else {
+      setForm(prev => ({ ...prev, [field]: value }));
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+      }
     }
   };
 
@@ -110,44 +135,59 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
         <h2 className="text-xl font-bold text-white">
           {form.id ? 'Modifier l\'activité' : 'Nouvelle activité'}
         </h2>
-        <div className="flex space-x-3">
-          <button 
-            onClick={handleSubmit} 
-            className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors"
-            title="Sauvegarder"
-          >
-            <Check className="w-6 h-6" />
-          </button>
-          {form.id && (
-            <button 
-              onClick={handleDelete} 
-              className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
-              title="Supprimer"
-            >
-              <Trash2 className="w-6 h-6" />
-            </button>
-          )}
-        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="p-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Date */}
+          {/* Date avec DatePicker */}
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
               <Calendar className="mr-2 w-5 h-5 text-indigo-600" /> Date
             </label>
-            <input 
-              type="date" 
-              value={form.date ? format(form.date, 'yyyy-MM-dd') : ''} 
-              onChange={(e) => handleFieldChange('date', new Date(e.target.value))}
-              min={format(minDate, 'yyyy-MM-dd')}
-              max={format(maxDate, 'yyyy-MM-dd')}
-              className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all ${
-                errors.date ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
+            <div className="relative">
+              <DatePicker
+                selected={form.date}
+                onChange={(date) => handleFieldChange('date', date)}
+                dateFormat="dd/MM/yyyy"
+                locale="fr"
+                minDate={minDate}
+                maxDate={maxDate}
+                placeholderText="Sélectionner une date"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all ${
+                  errors.date ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
+                }`}
+                calendarClassName="bg-white border border-gray-200 rounded-lg shadow-lg"
+                popperPlacement="bottom-start"
+                showPopperArrow={false}
+                popperModifiers={[
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, 8],
+                    },
+                  },
+                ]}
+                customInput={
+                  <input
+                    type="text"
+                    className={`w-full px-4 py-2.5 pr-10 border rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all ${
+                      errors.date ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                }
+              />
+              <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
+            {errors.date && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.date === "Date est requise" 
+                  ? errors.date 
+                  : "La date doit être comprise entre le " + 
+                    format(minDate, 'dd/MM/yyyy') + 
+                    " et le " + 
+                    format(maxDate, 'dd/MM/yyyy')}
+              </p>
+            )}
           </div>
 
           {/* Project */}
@@ -225,6 +265,29 @@ export default function ModernActivityForm({ activity, projects, monthYear, craI
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
             placeholder="Ajouter des remarques supplémentaires..."
           />
+        </div>
+
+        <div className="flex justify-end space-x-4 mt-6">
+          {form.id && (
+            <button 
+              onClick={handleDelete} 
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 bg-white hover:bg-red-50 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+              title="Supprimer l'activité"
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              Supprimer
+            </button>
+          )}
+          <button 
+            onClick={handleSubmit}
+            type="submit"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+            title="Sauvegarder l'activité"
+          >
+            <Check className="w-5 h-5 mr-2" />
+            Sauvegarder
+          </button>
         </div>
       </form>
     </div>

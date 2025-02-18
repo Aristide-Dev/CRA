@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Layout, Layers, Grid3X3, Table, Plus, X } from "lucide-react";
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ModernActivityForm from './Partials/ModernActivityForm';
 import ModernLayout from '@/Layouts/ModernLayout';
@@ -45,31 +45,42 @@ const ActivityBadge = ({ type }) => {
 };
 
 const Modal = ({ children, onClose }) => (
-  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl m-4 relative">
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4">
+    <div className="relative bg-transparent md:max-w-full w-full h-full sm:h-auto sm:max-h-[90vh] sm:w-auto sm:max-w-3xl sm:rounded-lg shadow-xl overflow-hidden">
+      {/* Bouton de fermeture */}
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+        className="absolute top-4 right-4 z-50 bg-white/50 backdrop-blur-sm p-2 rounded-full hover:bg-red-600/20 transition-colors"
         aria-label="Fermer la modal"
       >
-        <X className="w-6 h-6" />
+        <X className="w-6 h-6 text-red-500 sm:text-red-600" />
       </button>
-      <div className="p-6">
-        {children}
+
+      {/* Contenu scrollable */}
+      <div className="h-full sm:h-auto overflow-y-auto">
+        <div className="p-4 sm:p-6">
+          {children}
+        </div>
       </div>
     </div>
   </div>
 );
 
 const CalendarView = ({ activities, projects, monthYear, craId, onEdit }) => {
-  // On s'assure que monthYear est une chaîne de caractères valide
   const parsedMonthYear = typeof monthYear === 'string' ? monthYear : format(new Date(), 'yyyy-MM-dd');
   
+  // Obtenir le premier jour du mois
   const startDate = startOfMonth(parseISO(parsedMonthYear));
+  // Reculer jusqu'au lundi précédent si nécessaire
+  const calendarStart = startOfWeek(startDate, { weekStartsOn: 1 });
+  // Obtenir le dernier jour du mois
   const endDate = endOfMonth(parseISO(parsedMonthYear));
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
+  // Avancer jusqu'au dimanche suivant si nécessaire
+  const calendarEnd = endOfWeek(endDate, { weekStartsOn: 1 });
   
-  // Fonction de parsing sécurisée
+  // Générer tous les jours du calendrier
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  
   const safeParseISO = (dateString) => {
     if (!dateString) return null;
     if (dateString instanceof Date) return dateString;
@@ -83,7 +94,7 @@ const CalendarView = ({ activities, projects, monthYear, craId, onEdit }) => {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      {/* Entête des jours */}
+      {/* En-tête des jours de la semaine */}
       <div className="grid grid-cols-7 gap-px bg-gray-200 border-b border-gray-200">
         {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => (
           <div key={day} className="bg-gray-50 p-2 text-center text-sm font-medium text-gray-500">
@@ -94,13 +105,13 @@ const CalendarView = ({ activities, projects, monthYear, craId, onEdit }) => {
       {/* Grille des jours */}
       <div className="grid grid-cols-7 gap-px bg-gray-200">
         {days.map(day => {
-          // Filtrer les activités dont la date correspond au jour courant
           const dayActivities = activities.filter(activity => {
             const parsedDate = safeParseISO(activity.date);
             if (!parsedDate) return false;
             return isSameDay(parsedDate, day);
           });
           const isCurrentMonth = isSameMonth(day, parseISO(parsedMonthYear));
+          
           return (
             <div 
               key={day.toISOString()} 
@@ -294,9 +305,33 @@ const TableView = ({ activities, projects, monthYear, craId, onEdit }) => (
 );
 
 export default function EnhancedCRAForm({ cra, projects }) {
-  const [activities, setActivities] = useState(cra.activities || []);
+  // Tri des activités par date
+  const [activities, setActivities] = useState(() => {
+    const sortedActivities = [...(cra.activities || [])].sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateA - dateB;
+    });
+    return sortedActivities;
+  });
+
   const [currentView, setCurrentView] = useState('cards');
   const [editingActivity, setEditingActivity] = useState(null);
+
+  const handleFormSubmit = useCallback((savedActivity) => {
+    setActivities(prev => {
+      const updatedActivities = prev.map(a => 
+        a.id === savedActivity.id ? savedActivity : a
+      );
+      // Tri des activités après mise à jour
+      return updatedActivities.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA - dateB;
+      });
+    });
+    setEditingActivity(null);
+  }, []);
 
   const addActivity = useCallback(() => {
     const newActivity = {
@@ -308,16 +343,15 @@ export default function EnhancedCRAForm({ cra, projects }) {
       id: null,
       cra_id: cra.id,
     };
-    setActivities(prev => [...prev, newActivity]);
+    
+    // Ajout et tri immédiat
+    setActivities(prev => [...prev, newActivity].sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateA - dateB;
+    }));
     setEditingActivity(newActivity);
-  }, [projects, cra]);
-
-  const handleFormSubmit = useCallback((savedActivity) => {
-    setActivities(prev => 
-      prev.map(a => a.id === savedActivity.id ? savedActivity : a)
-    );
-    setEditingActivity(null);
-  }, []);
+  }, [projects, cra.id]);
 
   const viewComponents = {
     calendar: CalendarView,
@@ -375,14 +409,16 @@ export default function EnhancedCRAForm({ cra, projects }) {
 
       {editingActivity && (
         <Modal onClose={() => setEditingActivity(null)}>
-          <ModernActivityForm
-            activity={editingActivity}
-            projects={projects}
-            monthYear={cra.month_year}
-            craId={cra.id}
-            onSubmit={handleFormSubmit}
-            onCancel={() => setEditingActivity(null)}
-          />
+          <div className="bg-white sm:rounded-lg">
+            <ModernActivityForm
+              activity={editingActivity}
+              projects={projects}
+              monthYear={cra.month_year}
+              craId={cra.id}
+              onSubmit={handleFormSubmit}
+              onCancel={() => setEditingActivity(null)}
+            />
+          </div>
         </Modal>
       )}
     </ModernLayout>

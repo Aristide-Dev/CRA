@@ -1,19 +1,14 @@
-// CRA/ManagerIndex.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import ModernLayout from '@/Layouts/ModernLayout';
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-export default function CRAIndex({ cras, my_cras }) {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [showMyCras, setShowMyCras] = useState(false);
-
-  const years = Object.keys(cras).sort((a, b) => b - a);
-  
+export default function Personal({ my_cras }) {
   // Fonction pour grouper les CRAs par mois
   const groupCrasByMonth = (crasArray) => {
     return crasArray.reduce((acc, cra) => {
+      // On s'assure que month_year est bien une chaîne de type "YYYY-MM"
       const monthYear = new Date(cra.month_year).toISOString().slice(0, 7);
       if (!acc[monthYear]) {
         acc[monthYear] = [];
@@ -23,64 +18,27 @@ export default function CRAIndex({ cras, my_cras }) {
     }, {});
   };
 
-  // Préparation des données à afficher
-  const displayedCras = showMyCras 
-    ? groupCrasByMonth(my_cras)
-    : cras[selectedYear] || {};
-
-  // Fonction de suppression d'un CRA
-  const deleteCRA = (id) => {
-    if (confirm('Supprimer ce CRA ?')) {
-      // La fonction delete() est attendue d'Inertia (ou Inertia.delete)
-      // Vous pouvez aussi utiliser router.delete si vous préférez
-      router.delete(route('manager.cra.destroy', id));
-    }
-  };
+  const groupedCras = groupCrasByMonth(my_cras);
 
   return (
     <ModernLayout>
-      <Head title="Gestion des CRAs" />
-      
+      <Head title="Mes CRAS" />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* En-tête avec sélection d'année et toggle */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-            Gestion des Comptes Rendus d'Activité
-          </h1>
-          <div className="flex space-x-4 items-center">
-            {!showMyCras && (
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              >
-                {years.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-            )}
-            <button
-              onClick={() => setShowMyCras(!showMyCras)}
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
-            >
-              {showMyCras ? "Voir tous les CRAs" : "Voir mes CRAs"}
-            </button>
-            <Link 
-              href={route('manager.cra.create')}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:bg-indigo-700 transition-colors"
-            >
-              Nouveau CRA
-            </Link>
-          </div>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Mes Comptes Rendus d'Activité</h1>
+          <Link 
+            href={route('manager.cra.create')}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:bg-indigo-700 transition-colors"
+          >
+            Nouveau CRA
+          </Link>
         </div>
 
-        {/* Grid de cartes */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(displayedCras).map(([monthYear, monthCras]) => {
-            // S'assurer que monthCras est un tableau
+          {Object.entries(groupedCras).map(([monthYear, monthCras]) => {
+            // On s'assure que monthCras est un tableau
             const crasArray = Array.isArray(monthCras) ? monthCras : Object.values(monthCras);
-            
-            // Utiliser la clé monthYear pour créer un objet Date correct (en ajoutant le jour '01')
+            // Générer un objet Date valide à partir de la clé monthYear en ajoutant "-01"
             const date = new Date(monthYear + '-01');
             const totalCras = crasArray.length;
             const submittedCount = crasArray.filter(cra => cra.status === 'submitted').length;
@@ -108,19 +66,19 @@ export default function CRAIndex({ cras, my_cras }) {
                 
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm">
-                    <span>En attente:</span>
+                    <span>En attente :</span>
                     <span className="font-medium text-yellow-600">{submittedCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Approuvés:</span>
+                    <span>Approuvés :</span>
                     <span className="font-medium text-green-600">{approvedCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Rejetés:</span>
+                    <span>Rejetés :</span>
                     <span className="font-medium text-red-600">{rejectedCount}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Brouillons:</span>
+                    <span>Brouillons :</span>
                     <span className="font-medium text-gray-600">{draftCount}</span>
                   </div>
                 </div>
@@ -149,4 +107,4 @@ export default function CRAIndex({ cras, my_cras }) {
       </div>
     </ModernLayout>
   );
-}
+} 
