@@ -35,6 +35,6 @@ class Projet extends Model
     
     // Un projet a plusieurs activités
     public function activities() {
-        return $this->hasMany(Activitie::class, 'project_id');
+        return $this->hasMany(Activitie::class, 'projet_id');
     }
 }

@@ -30,6 +30,6 @@ class Activitie extends Model
 
     // Une activité est liée à un projet
     public function project() {
-        return $this->belongsTo(Projet::class);
+        return $this->belongsTo(Projet::class, 'projet_id');
     }
 }

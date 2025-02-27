@@ -22,29 +22,16 @@ class CRAController extends Controller
     // Afficher la liste des CRAs de l'utilisateur
     public function index()
     {
-        if ($this->role === 'worker') {
-            return Inertia::render('CRA/Worker/Index', [
-                'cras' => Cra::with('activities.project')
-                    ->where('user_id', $this->user->id)
-                    ->get()
-            ]);
-        } else {
-            // Pour les managers et admins
-            $cras = Cra::with(['activities.project', 'user'])
+        $cras = Cra::with(['activities.project', 'user'])
             ->orderBy('month_year', 'desc')
             ->get()
-            ->unique(fn($cra) => $cra->month_year) // Assure l'unicité par utilisateur et date
-            ->groupBy(fn($cra) => date('Y', strtotime($cra->month_year))); // Trie les clés (années et mois) dans l'ordre décroissant
+            ->groupBy(function($cra) {
+                return Carbon::parse($cra->month_year)->format('Y');
+            });
 
-            // dd($cras);
-
-            return Inertia::render('CRA/Manager/Index', [
-                'cras' => $cras,
-                'my_cras' => Cra::with(['activities.project'])
-                    ->where('user_id', $this->user->id)
-                    ->get()
-            ]);
-        }
+        return Inertia::render('CRA/Index', [
+            'cras' => $cras
+        ]);
     }
 
     // Afficher le formulaire de création
@@ -159,7 +146,7 @@ class CRAController extends Controller
             ->whereMonth('month_year', $month)
             ->get();
 
-        return Inertia::render('CRA/Manager/MonthDetail', [
+        return Inertia::render('CRA/MonthDetail', [
             'cras' => $cras,
             'year' => $year,
             'month' => $month
@@ -233,7 +220,7 @@ class CRAController extends Controller
             }
         }
 
-        return \Inertia\Inertia::render('CRA/Manager/CraDetails', [
+        return \Inertia\Inertia::render('CRA/CraDetails', [
             'cra' => $cra,
             'stats' => [
                 // Statistiques globales

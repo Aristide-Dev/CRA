@@ -69,6 +69,7 @@ export interface Cra {
     user_id: number;
     month_year: string;
     status: CraStatus;
+    updated_at: string;
 
     user: User;
     activities: Activitie[];

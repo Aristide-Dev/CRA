@@ -49,7 +49,7 @@ export function AppSidebar() {
                       title: 'CRAs',
                       url: '#',
                       icon: Calendar,
-                      routeName: 'cra',
+                      routeName: 'cra.*',
                       subItems: [
                           {
                               title: 'Tous les CRAs',
