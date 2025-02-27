@@ -29,6 +29,6 @@ class Cra extends Model
 
     // Un CRA a plusieurs activités
     public function activities() {
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(Activitie::class);
     }
 }

@@ -156,3 +156,30 @@
         @apply bg-background text-foreground;
     }
 }
+
+@keyframes fadeIn {
+  from { opacity: -0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.bg-grid-indigo-100 {
+  background-image: linear-gradient(to right, #e0e7ff 1px, transparent 1px),
+    linear-gradient(to bottom, #e0e7ff 1px, transparent 1px);
+}
+
+/*
+  ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+}

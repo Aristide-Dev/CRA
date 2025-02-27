@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cra_id')->constrained();
-            $table->foreignId('project_id')->constrained();
+            $table->foreignId('projet_id')->constrained();
             $table->date('date');
             $table->string('type'); // , ['development', 'research', 'training', 'meeting']
             $table->integer('duration'); // Heures (ex: 4)

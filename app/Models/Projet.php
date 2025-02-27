@@ -18,6 +18,7 @@ class Projet extends Model
         'name',
         'description',
         'status',
+
     ];
 
     /**
@@ -34,6 +35,6 @@ class Projet extends Model
     
     // Un projet a plusieurs activités
     public function activities() {
-        return $this->hasMany(Activity::class);
+        return $this->hasMany(Activitie::class, 'project_id');
     }
 }

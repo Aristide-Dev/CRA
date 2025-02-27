@@ -17,7 +17,7 @@ class Activitie extends Model
      */
     protected $fillable = [
         'cra_id',
-        'project_id',
+        'projet_id',
         'date',
         'type',
         'duration',
@@ -30,6 +30,6 @@ class Activitie extends Model
 
     // Une activité est liée à un projet
     public function project() {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Projet::class);
     }
 }

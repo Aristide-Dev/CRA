@@ -481,6 +481,16 @@ const sidebarMenuButtonVariants = cva(
         default: "h-8 text-sm",
         sm: "h-7 text-xs",
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
+        xl: "h-17 text-sm group-data-[collapsible=icon]:p-0!",
+        xxl: "h-22 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxl: "h-27 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxl: "h-32 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxxl: "h-37 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxxxl: "h-42 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxxxxl: "h-47 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxxxxxl: "h-52 text-sm group-data-[collapsible=icon]:p-0!",
+        xxxxxxxxxl: "h-57 text-sm group-data-[collapsible=icon]:p-0!",
+        
       },
     },
     defaultVariants: {
